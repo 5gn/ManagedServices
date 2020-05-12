@@ -1,5 +1,5 @@
 <#
-v0.1.0 - 6th May 2020
+v0.1.1 - 6th May 2020
 
 Datto RMM Agent deploy by Microsoft Endpoint Manager (Intune)
 Adapted from a script by Jon North, Datto, March 2020
@@ -19,15 +19,20 @@ When creating the script deployment policy in Microsoft EndPoint Manager, the fo
 > Enforce script signature check = NO
 > Run script in 64 bit PowerShell Host = NO
 
+-- Version --
+0.1.1 Write in the site ID as a parameter to the script and check to make sure the site ID is semi valid - @github/jantoney
+
 -- Needed Improvements --
 1. Choose the Agent installer based off of an Active Directory Group that the machine is a part of or another way of selecting the group automatically
 #>
 
+#set passed parameters
+param($RMMSiteID = $null)
+
+
 # Script Parameters
 $LogPath = "$env:TEMP\DattoRMMInsatll"     # NO trailing slash \
 $LogFileName = "DattoRMMAgentInstall.log"
-$RMMSiteID = "{DATTO_RMM_SITE_ID}"
-
 
 #### DO NOT CHANGE BELOW THIS LINE ####
 
@@ -47,6 +52,20 @@ Catch {
 }
 
 Out-File -FilePath $LogFile "$(Get-Date -Format 'dd/MM/yyyy HH:mm:ss:fff')  :  Started Datto RMM Agent install script."
+
+# Check the Site ID is present and valid
+if ($RMMSiteID -eq $null) {
+  Out-File -FilePath $LogFile "$(Get-Date -Format 'dd/MM/yyyy HH:mm:ss:fff')  :  No site ID has been passed to the script."
+  Write-Output "No site ID passed"
+  Exit 1
+} else {
+  if ($RMMSiteID -notmatch '[a-z0-9]{8}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{12}') {
+    Out-File -FilePath $LogFile "$(Get-Date -Format 'dd/MM/yyyy HH:mm:ss:fff')  :  Supplied Datto RMM Site ID ($SiteID) is in an invalid format."
+    Write-Output "Datto RMM Site ID format is incorrect"
+	  Write-Output "ID Entered: $SiteID"
+    Exit 1
+  }
+}
 
 # First check if Agent is installed and instantly exit if so
 If (Get-Service CagService -ErrorAction SilentlyContinue) {
