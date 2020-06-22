@@ -29,6 +29,9 @@ When creating the script deployment policy in Microsoft EndPoint Manager, the fo
 #set passed parameters
 param($RMMSiteID = $null)
 
+# Manual Datto RMM Site ID Allocation
+$manualRMMSiteID = ""
+$manualRMMSiteName = ""
 
 # Script Parameters
 $LogPath = "$env:TEMP\DattoRMMInsatll"     # NO trailing slash \
@@ -51,20 +54,27 @@ Catch {
   
 }
 
-Out-File -FilePath $LogFile "$(Get-Date -Format 'dd/MM/yyyy HH:mm:ss:fff')  :  Started Datto RMM Agent install script."
+Out-File -FilePath $LogFile "$(Get-Date -Format 'dd/MM/yyyy HH:mm:ss:fff')  :  Started Datto RMM Agent install script.
 
 # Check the Site ID is present and valid
 if ($RMMSiteID -eq $null) {
-  Out-File -FilePath $LogFile "$(Get-Date -Format 'dd/MM/yyyy HH:mm:ss:fff')  :  No site ID has been passed to the script."
-  Write-Output "No site ID passed"
-  Exit 1
-} else {
-  if ($RMMSiteID -notmatch '[a-z0-9]{8}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{12}') {
-    Out-File -FilePath $LogFile "$(Get-Date -Format 'dd/MM/yyyy HH:mm:ss:fff')  :  Supplied Datto RMM Site ID ($SiteID) is in an invalid format."
-    Write-Output "Datto RMM Site ID format is incorrect"
-	  Write-Output "ID Entered: $SiteID"
-    Exit 1
+  Out-File -FilePath $LogFile "$(Get-Date -Format 'dd/MM/yyyy HH:mm:ss:fff')  :  No site ID has been passed to the script. Checking Manual Site ID"
+  If ($manualRMMSiteID -ne $null) {
+  	$RMMSiteID = $manualRMMSiteID
+	Out-File -FilePath $LogFile "$(Get-Date -Format 'dd/MM/yyyy HH:mm:ss:fff')  :  Manual Site ID used"
+  } else {
+  	Out-File -FilePath $LogFile "$(Get-Date -Format 'dd/MM/yyyy HH:mm:ss:fff')  :  No Site ID found. Exiting"
+	Write-Output "No site ID passed"
+  	Exit 1
   }
+}
+
+#Check if the Site ID matches the required Regex pattern
+if ($RMMSiteID -notmatch '[a-z0-9]{8}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{12}') {
+   Out-File -FilePath $LogFile "$(Get-Date -Format 'dd/MM/yyyy HH:mm:ss:fff')  :  Supplied Datto RMM Site ID ($SiteID) is in an invalid format."
+   Write-Output "Datto RMM Site ID format is incorrect"
+   Write-Output "ID Entered: $SiteID"
+   Exit 1
 }
 
 # First check if Agent is installed and instantly exit if so
