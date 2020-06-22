@@ -51,7 +51,7 @@ Try {
 }
 Catch {
   Write-Output "We can't create that directory!"
-  
+  exit 1
 }
 
 Out-File -FilePath $LogFile "$(Get-Date -Format 'dd/MM/yyyy HH:mm:ss:fff')  :  Started Datto RMM Agent install script.
@@ -81,7 +81,7 @@ if ($RMMSiteID -notmatch '[a-z0-9]{8}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-
 If (Get-Service CagService -ErrorAction SilentlyContinue) {
     Write-Output "Datto RMM Agent already installed on this device"
     Out-File -FilePath $LogFile "$(Get-Date -Format 'dd/MM/yyyy HH:mm:ss:fff')  :  Datto RMM Agent already installed on this device." -Append
-    Exit
+    Exit 0
 }
 
 # Download the Agent
@@ -109,5 +109,5 @@ Out-File -FilePath $LogFile "$(Get-Date -Format 'dd/MM/yyyy HH:mm:ss:fff')  :  A
 Write-Output "Agent install completed at $(Get-Date -Format HH:mm) in $((Get-Date).Subtract($InstallStart).Seconds) seconds."
 Remove-Item "$LogPath\DRMMSetup.exe" -Force
 Out-File -FilePath $LogFile "$(Get-Date -Format 'dd/MM/yyyy HH:mm:ss:fff')  :  Removed Agent Installer." -Append
-Exit
+Exit 0
     
