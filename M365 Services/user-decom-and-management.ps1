@@ -336,8 +336,10 @@ while ($mainLoop -eq $true) {
                 $NewSurname = "ZZZ_$($UserDetails.surname)"
                 $NewDisplayName = "ZZZ_$($UserDetails.displayname)"
                 $error.Clear()
-                try {Set-AzureADUser -ObjectID $UserDetails.userprincipalname -DisplayName $NewDisplayName -GivenName $NewFirstName -Surname $NewSurname -Department "Off-boarded" -TelephoneNumber $null -ErrorAction SilentlyContinue}
-                catch {write-host "Unable to update users details. Maybe try again?" -ForegroundColor Red; write-host;write-host "---- ERROR ----"; write-host $Error; write-host "---- END ERROR ----"; write-host; pause}
+                if ($UserDetails.displayname -notmatch "ZZZ") {
+                    try {Set-AzureADUser -ObjectID $UserDetails.userprincipalname -DisplayName $NewDisplayName -GivenName $NewFirstName -Surname $NewSurname -Department "Off-boarded" -TelephoneNumber $null -ErrorAction SilentlyContinue}
+                    catch {write-host "Unable to update users details. Maybe try again?" -ForegroundColor Red; write-host;write-host "---- ERROR ----"; write-host $Error; write-host "---- END ERROR ----"; write-host; pause}
+                }
                 if (-not $error)
                 {
                     # 100% Confirm the action was taken
